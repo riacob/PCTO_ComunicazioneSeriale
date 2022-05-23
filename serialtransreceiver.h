@@ -30,6 +30,8 @@ private:
         qint64 readBufferSize = 0;
         // Stop bits
         QSerialPort::StopBits stopBits = QSerialPort::OneStop;
+        // Open mode
+        QSerialPort::OpenMode openMode = QSerialPort::ReadWrite;
     } SerialPortSettings;
     SerialPortSettings* serialPortSettings;
     QSerialPort* serialPort;
@@ -110,7 +112,7 @@ public:
      * @returns nothing
      *
      */
-    void setPortName(QString* portName);
+    void setPortName(QString portName);
 
     /*
      *
@@ -136,6 +138,17 @@ public:
 
     /*
      *
+     * void setOpenMode(QSerialPort::OpenMode openMode)
+     * @description sets the open mode of the serial port
+     * @params
+     * - openMode: set the serial port's open mode to this value
+     * @returns nothing
+     *
+     */
+    void setOpenMode(QSerialPort::OpenMode openMode);
+
+    /*
+     *
      * setConfig(QSerialPort::BaudRate baudRate, QSerialPort::DataBits dataBits, QSerialPort::FlowControl flowControl, QSerialPort::Parity parity, QString* portName, qint64 readBufferSize, QSerialPort::StopBits stopBits)
      * @description sets all the parameters of the serial port
      * @params
@@ -146,10 +159,11 @@ public:
      * - portName: set the serial port's port name to this value
      * - readBufferSize: set the serial port's buffer size to this value
      * - setStopBits: set the serial port's stop bits to this value
+     * - openMode: set the serial port's open mode to this value
      * @returns nothing
      *
      */
-    void setConfig(QSerialPort::BaudRate baudRate, QSerialPort::DataBits dataBits, QSerialPort::FlowControl flowControl, QSerialPort::Parity parity, QString* portName, qint64 readBufferSize, QSerialPort::StopBits stopBits);
+    void setSettings(QSerialPort::BaudRate baudRate, QSerialPort::DataBits dataBits, QSerialPort::FlowControl flowControl, QSerialPort::Parity parity, QString portName, qint64 readBufferSize, QSerialPort::StopBits stopBits, QSerialPort::OpenMode openMode);
 
     /*
      *
@@ -159,7 +173,7 @@ public:
      * @returns nothing
      *
      */
-    void setDefaultConfig();
+    void setDefaultSettings();
 
     /*
      *
@@ -169,12 +183,77 @@ public:
      * @returns boolean, if true configuration is valid, else it's to be considered invalid
      *
      */
-    bool validateConfig();
+    bool validateSettings();
 
+    /*
+     *
+     * QSerialPort* getSerialPort()
+     * @description returns the serial port object pointer, is very memory-unsafe
+     * @params none
+     * @returns the pointer to the QSerialPort object
+     *
+     */
     QSerialPort* getSerialPort();
-    SerialPortSettings* getSerialPortSettings();
+
+    /*
+     *
+     * SerialPortSettings* getSettings()
+     * @description returns the serial port settings struct pointer, is very memory-unsafe
+     * @params none
+     * @returns the pointer to the SerialPortSettings object
+     *
+     */
+    SerialPortSettings* getSettings();
+
+    /*
+     *
+     * QSerialPort* getSerialPort()
+     * @description returns the serial port object, is very memory-unsafe
+     * @params none
+     * @returns the pointer to the QSerialPort object
+     *
+     */
     void openSerialPort();
+
+    /*
+     *
+     * void closeSerialPort();
+     * @description closes the serial port, if open
+     * @params none
+     * @returns nothing
+     *
+     */
     void closeSerialPort();
+
+    /*
+     *
+     * void writeTestChars()
+     * @description writes some characters to the serial port to verify that the communication between devices is wotking correctly
+     * @params none
+     * @returns nothing
+     *
+     */
+    void writeTestChars();
+
+    /*
+     *
+     * QByteArray readData()
+     * @description reads the data coming from the serial port
+     * @params none
+     * @returns the QByteArray containing the received data
+     *
+     */
+    QByteArray readData();
+
+    /*
+     *
+     * void writeData(QByteArray data)
+     * @description writes the given data to the serial port
+     * @params none
+     * @returns nothing
+     *
+     */
+    void writeData(QByteArray data);
 };
 
 #endif // SERIALTRANSRECEIVER_H
