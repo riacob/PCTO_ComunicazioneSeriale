@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "serialtransreceiver.h"
 
 #include <QApplication>
 

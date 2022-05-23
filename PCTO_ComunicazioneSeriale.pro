@@ -10,10 +10,12 @@ CONFIG += c++11
 
 SOURCES += \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    serialtransreceiver.cpp
 
 HEADERS += \
-    mainwindow.h
+    mainwindow.h \
+    serialtransreceiver.h
 
 FORMS += \
     mainwindow.ui
