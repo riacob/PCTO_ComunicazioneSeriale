@@ -17,27 +17,37 @@ MainWindow::~MainWindow()
 }
 
 
+// Write test chars
 void MainWindow::on_pushButton_clicked()
 {
     serial->writeTestChars();
 }
 
 
+// Connect
 void MainWindow::on_pushButton_2_clicked()
 {
-    serial->setPortName("COM5");
+    serial->setPortName(ui->plainTextEdit_2->toPlainText());
     serial->openSerialPort();
 }
 
-
+// Read
 void MainWindow::on_pushButton_3_clicked()
 {
-    serial->readData();
+    QByteArray data = serial->readData();
+    ui->plainTextEdit_3->clear();
+    ui->plainTextEdit_3->appendPlainText(tr(data));
 }
 
-
+// Write
 void MainWindow::on_pushButton_4_clicked()
 {
     serial->writeData(ui->plainTextEdit->toPlainText().toStdString().c_str());
+}
+
+// Disconnect
+void MainWindow::on_pushButton_5_clicked()
+{
+    serial->closeSerialPort();
 }
 
