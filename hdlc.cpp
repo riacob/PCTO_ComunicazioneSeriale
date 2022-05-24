@@ -105,8 +105,7 @@ QByteArray HDLC::encodeHDLC(Byte ADD, Byte CTR, QByteArray DAT)
     }
 
     // End flag
-    // Index: FLG_LEN (1 Bytes) + BEG_LEN (3 Bytes) + DAT_LEN (x Bytes) + FCS_LEN (2 Bytes) + 1
-    out[BEG_LEN+DAT_LEN+FCS_LEN+FLG_LEN+FLG_LEN+1] = FLG;
+    out.append(FLG);
 
     return out;
 }
