@@ -53,7 +53,7 @@ void MainWindow::on_pushButton_5_clicked()
 {
     serial->closeSerialPort();
 
-    QString input = "TE}ST";
+    QString input = "TE}ST ABCDEF - 123456 &%$ *";
     int add = 135;
     int ctr = add;
     QByteArray eHDLC = HDLC().encodeHDLC(add, ctr, input.toStdString().c_str());

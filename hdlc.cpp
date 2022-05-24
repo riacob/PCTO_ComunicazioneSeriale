@@ -117,6 +117,7 @@ HDLC::decodedHDLC HDLC::decodeHDLC(QByteArray encodedHDLC)
     // Index = DAT_LEN - FLG - BEG_LEN - FCS - FLG
     //qDebug() << encodedHDLC.length();
     int DAT_LEN = encodedHDLC.length() - 2 - 2 - 2 - 2;
+    int escOfst = 0;
 
     // Address
     decoded.ADD = encodedHDLC[1];
@@ -124,16 +125,23 @@ HDLC::decodedHDLC HDLC::decodeHDLC(QByteArray encodedHDLC)
     // Control
     decoded.CTR = encodedHDLC[4];
 
-    // Data
+    // Data with reverse XOR 0x20 - result = charToXOR^0x20
     decoded.DAT = 0;
-    for (int i = 5; i < DAT_LEN+5; i++) {
+    for (int i = 5; i < DAT_LEN+5-escOfst; i++) {
+        // If we find an escape char we xor the next char and remove the escape char
+        // We must also offset the checksum position index
+        if (encodedHDLC[i].operator==(ESC)) {
+            encodedHDLC[i+1] = encodedHDLC[i+1] ^ 0x20;
+            encodedHDLC.remove(i, 1);
+            escOfst++;
+        }
         decoded.DAT.append(encodedHDLC[i]);
     }
 
     // Checksum
     decoded.FCS = 0;
-    decoded.FCS[0] = encodedHDLC[FCS_LEN+BEG_LEN+DAT_LEN+1];
-    decoded.FCS[1] = encodedHDLC[FCS_LEN+BEG_LEN+DAT_LEN+2];
+    decoded.FCS[0] = encodedHDLC[FCS_LEN+BEG_LEN+DAT_LEN+1-escOfst];
+    decoded.FCS[1] = encodedHDLC[FCS_LEN+BEG_LEN+DAT_LEN+2-escOfst];
 
     return decoded;
 }
