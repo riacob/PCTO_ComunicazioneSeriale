@@ -1,119 +1,132 @@
+/*
+ *
+ * @authors Riccardo Iacob, Don Davide
+ * @date 24/05/2022
+ * @description HDLC interface
+ *
+ */
+
 #include "hdlc.h"
 
-HDLC::HDLC()
-{
+#include <QDebug>
 
-}
+#define FLG 0x7E // Flag char
+#define ESC 0x7D // Esc char
+#define TST 0x99
+#define FCS_LEN 2 // FCS length, 2 Bytes
+#define BEG_LEN 2 // ADD + ESC + CTR length, 3 Bytes
+#define FLG_LEN 1 // FLG length, 1 byte
 
-QByteArray HDLC::frame(QByteArray data)
+/*
+
+  Risorse utili:
+    HDLC P.121
+    Byte Stuffing P.111
+    CRC P.28
+
+ DATI = 8bFLG / 8bADD 8bESC 8bCTR xbDAT 16bFCS / 8bFLG
+ PACCHETTO = 8bADD 8bESC 8bCTR xbDAT 16bFCS
+
+ FLG = 0x7E
+ ESC = 0x7D
+
+ 1. Inserire FLG all'inizio
+
+ 2. Preparare il pacchetto
+    a. calcolare FCS, ottenuto da ADD + ESC + CTR + DAT processati dall'algoritmo del CRC16
+    b. inserire nel frame ADDR + ESC + CTR + DAT + FCS
+
+ 3. Controllare l'eventuale presenza nel pacchetto di caratteri FLG, ESC
+
+ 4. In caso affermativo
+    a. Inserire il carattere di escape prima del carattere individuato
+    b. Calcolare lo XOR tra il carattere individuato e 0x20 (complemento a 5)
+
+ 5. Inserire FLG alla fine
+
+ 6. Consegnare il risultato
+
+*/
+
+QByteArray HDLC::encodeHDLC(Byte ADD, Byte CTR, QByteArray DAT)
 {
-    QByteArray out = 0;
-    char startFlag = 0b01111110;
-    char endFlag = 0b01111110;
-    out.append(startFlag);
-    out.append(data);
-    out.append(endFlag);
+    int DAT_LEN = DAT.length(); // Data length
+    QByteArray out = 0; // Resulting framed packet
+    QByteArray toChecksum = 0; // ADD + ESC + CTR + DAT
+
+    // Start flag
+    out[0] = FLG; // 1 Byte
+
+    // Address
+    out[1] = ADD; // 1 Byte
+    // Is part of the to-checksum packet
+    toChecksum.append(ADD);
+
+    // Escape
+    /*
+    out[2] = ESC; // 1 Byte
+    // Is part of the to-checksum packet
+    toChecksum.append(ESC);*/
+
+    // Control
+    out[3] = CTR; // 1 Byte
+    // Is part of the to-checksum packet
+    toChecksum.append(CTR);
+
+    // Data
+    out.append(DAT); // DAT_LEN Byte(s)
+    // Is part of the to-checksum packet
+    toChecksum.append(DAT);
+
+    // CRC16
+    out.append(qChecksum(toChecksum, 16)); // 2 Bytes
+
+    // Byte stuffing
+    // Loop trough the array excluding the start end end flags
+    // Look for FLG and ESC chars
+    // If found,
+    // 1. Compute XOR between found char and 0x20
+    // 2. Insert the ESC char before the found char
+    // Continue
+    // 8bADD 8bESC 8bCTR xbDAT 16bFCS
+    for (int i = 1; i < BEG_LEN+DAT_LEN+FCS_LEN; i++) {
+        if ((out[i].operator==(FLG)) || (out[i].operator==(ESC))) {
+            out[i] = out[i] ^ 0x20;
+            out.insert(i, ESC);
+        }
+    }
+
+    // End flag
+    // Index: FLG_LEN (1 Bytes) + BEG_LEN (3 Bytes) + DAT_LEN (x Bytes) + FCS_LEN (2 Bytes) + 1
+    out[BEG_LEN+DAT_LEN+FCS_LEN+FLG_LEN+FLG_LEN] = FLG;
+
     return out;
 }
 
-int HDLC::crc16(char *frame, char framelgt)
+HDLC::decodedHDLC HDLC::decodeHDLC(QByteArray encodedHDLC)
 {
-int temp;
-bool odd;
-int crc;
-int i,j;
-// 1. Si inizializza il CRC al valore 0xFFFF
-crc = 0xFFFF;
-// 6. Si ripete dal punto 2 fino a quanto tutti i byte del
-// frame sono stati processati.
-for (i=0; i<framelgt; i++)
-{
-// 2. Si esegue lo XOR (OR esclusivo) del byte con il byte
-// basso del CRC memorizzando il risultato nel CRC.
-temp = frame[i]&0x00FF;
-crc ^= temp;
-// 5. I punti 3 e 4 vanno ripetuti 8 volte per ogni byte
-for (j=0; j<8; j++)
-{
-// 3. Si esegue lo shift del CRC di una posizione verso
-// destra e si pone a 0 il bit15 (MSB) del CRC.
-odd = crc&0x0001?true:false;
-crc = crc >> 1;
-// 4. Se il bit0 prima dello shift era 0 si torna al
-// punto 3 mentre se il bit0 prima dello shift era
-// 1 si esegue l’XOR del CRC con il valore 0xA001.
-if (odd)
-crc ^= 0xA001;
-    //crc ^= 0xFFFF;
-}
-}
-return crc;
-}
+    HDLC::decodedHDLC decoded;
+    // Index = DAT_LEN - FLG - BEG_LEN - FCS - FLG
+    int DAT_LEN = encodedHDLC.length() - BEG_LEN - FCS_LEN - FLG_LEN - FLG_LEN;
 
-// Function for bit stuffing
-QByteArray HDLC::stuff(QByteArray arr, int N)
-{
+    // Extract the beginning from the framed packet
+    decoded.FLG_1 = encodedHDLC[0];
+    decoded.ADD = encodedHDLC[1];
+    decoded.ESC_C = encodedHDLC[2];
+    decoded.CTR = encodedHDLC[3];
 
-    // Stores the stuffed array
-    QByteArray brr;
-
-    // Variables to traverse arrays
-    int i, j, k;
-    i = 0;
-    j = 0;
-
-    // Stores the count of consecutive ones
-    int count = 1;
-
-    // Loop to traverse in the range [0, N)
-    while (i < N)
-    {
-
-        // If the current bit is a set bit
-        if (arr[i].operator<=(1))
-        {
-
-            // Insert into array brr[]
-            brr[j] = arr[i];
-
-            // Loop to check for
-            // next 5 bits
-            for(k = i + 1; arr[k].operator==(1) && k < N && count < 5;
-                k++)
-            {
-                j++;
-                brr[j] = arr[k];
-                count++;
-
-                // If 5 consecutive set bits
-                // are found insert a 0 bit
-                if (count == 5)
-                {
-                    j++;
-                    brr[j] = 0;
-                }
-                i = k;
-            }
-        }
-
-        // Otherwise insert arr[i] into
-        // the array brr[]
-        else
-        {
-            brr[j] = arr[i];
-        }
-        i++;
-        j++;
+    // Extract the information from the framed packet
+    for (int i = 4; i < DAT_LEN; i++) {
+         decoded.DAT.append(encodedHDLC[i]);
     }
 
-    return brr;
+    // Extract the FCS from the framed packet
+    decoded.FCS[0] = encodedHDLC[FLG_LEN+BEG_LEN+DAT_LEN+1];
+    decoded.FCS[1] = encodedHDLC[FLG_LEN+BEG_LEN+DAT_LEN+2];
 
+    // Extract the ending from the framed packet
+    decoded.FLG_2 =  encodedHDLC[FLG_LEN+BEG_LEN+DAT_LEN+FCS_LEN+1];
+
+    return decoded;
 }
-
-QByteArray stuffing(QByteArray data)
-{
-
-}
-
-
 

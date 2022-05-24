@@ -52,7 +52,12 @@ void MainWindow::on_pushButton_4_clicked()
 void MainWindow::on_pushButton_5_clicked()
 {
     serial->closeSerialPort();
-    char* frame = "ITS";
-    qDebug() << HDLC().crc16(frame, 24);
+
+    QByteArray eHDLC = HDLC().encodeHDLC(0x00, 0x00, "Hello World");
+    qDebug() << eHDLC;
+
+    HDLC::decodedHDLC dHDLC = HDLC().decodeHDLC(eHDLC);
+    qDebug() << dHDLC.FLG_1 << dHDLC.ADD << dHDLC.ESC_C << dHDLC.CTR << dHDLC.DAT << dHDLC.FLG_2;
+
 }
 

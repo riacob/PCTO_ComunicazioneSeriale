@@ -1,3 +1,11 @@
+/*
+ *
+ * @authors Riccardo Iacob, Gorassini Alessandro
+ * @date 23/05/2022
+ * @description Serial trasmission and reception interface
+ *
+ */
+
 #include "serialtransreceiver.h"
 #include "QtSerialPort/QSerialPort"
 #include <QDebug>
