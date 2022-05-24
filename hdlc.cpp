@@ -12,7 +12,6 @@
 
 #define FLG 0x7E // Flag char
 #define ESC 0x7D // Esc char
-#define TST 0x99
 #define FCS_LEN 2 // FCS length, 2 Bytes
 #define BEG_LEN 3 // ADD + ESC + CTR length, 3 Bytes
 #define FLG_LEN 1 // FLG length, 1 byte
