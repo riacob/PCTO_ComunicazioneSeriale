@@ -63,5 +63,6 @@ void MainWindow::on_pushButton_5_clicked()
     qDebug()  << "ENCODED HDLC" << eHDLC.toStdString().c_str();
     qDebug() << "DECODED HDLC (ADD, CTR, DAT, FCS, VALID?)" << (char)dHDLC.ADD << (char)dHDLC.CTR << dHDLC.DAT << dHDLC.FCS << dHDLC.dataValid;
 
+
 }
 

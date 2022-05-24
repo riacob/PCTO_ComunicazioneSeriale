@@ -181,4 +181,18 @@ void SerialTransreceiver::setSettings(QSerialPort::BaudRate baudRate, QSerialPor
     serialPort->setStopBits(serialPortSettings->stopBits);
 }
 
+void SerialTransreceiver::writeDataEncodeHDLC(Byte ADD, Byte CTR, QByteArray data)
+{
+    // Encode and write the data to the serial port
+    QByteArray finalData = HDLC::encodeHDLC(ADD, CTR, data);
+    writeData(finalData);
+}
 
+HDLC::decodedHDLC SerialTransreceiver::readDataDecodeHDLC()
+{
+    // Read and decode the data from the serial port
+    HDLC::decodedHDLC decodedHDLC;
+    QByteArray rData = readData();
+    decodedHDLC = HDLC::decodeHDLC(rData);
+    return decodedHDLC;
+}

@@ -12,9 +12,13 @@
 #include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
 
+#include "hdlc.h"
+
 class SerialTransreceiver
 {
 private:
+
+    // Serial port settings struct, holds the settings for the serial port
     typedef struct SerialPortSettings{
         // Baud rate
         QSerialPort::BaudRate baudRate = QSerialPort::Baud9600;
@@ -33,8 +37,12 @@ private:
         // Open mode
         QSerialPort::OpenMode openMode = QSerialPort::ReadWrite;
     } SerialPortSettings;
+
+    // Serial port settings pointer
     SerialPortSettings* serialPortSettings;
+    // Serial port pointer
     QSerialPort* serialPort;
+
 public:
 
     /*
@@ -254,6 +262,28 @@ public:
      *
      */
     void writeData(QByteArray data);
+
+    /*
+     *
+     * void writeDataEncodeHDLC(QByteArray data)
+     * @description encodes the given data trough HDLC and writes it to the serial port
+     * @params
+     * - data: the data to be encoded
+     * @returns nothing
+     *
+     */
+    void writeDataEncodeHDLC(Byte ADD, Byte CTR, QByteArray data);
+
+    /*
+     *
+     * decodedHDLC readDataDecodeHDLC()
+     * @description reads the incoming data from the serial port and decodes it trough HDLC
+     * @params none
+     * @returns the decoded data in a decodedHDLC struct
+     *
+     */
+    HDLC::decodedHDLC readDataDecodeHDLC();
+
 };
 
 #endif // SERIALTRANSRECEIVER_H

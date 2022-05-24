@@ -41,13 +41,21 @@ ESC = 0x7D
 class HDLC
 {
 public:
+
+    // decodedHDLC struct, holds the data of a given decoded HDLC data packet
     typedef struct decodedHDLC {
+        // Address
         Byte ADD;
+        // Control
         Byte CTR;
+        // Data
         QByteArray DAT;
+        // CRC16
         QByteArray FCS;
+        // Data validity flag, set if the calculated CRC16 matches the received one
         bool dataValid;
     } decodedHDLC;
+
     /*
      *
      * QByteArray encodeHDLC(Byte ADD, Byte CTR, QByteArray DAT)
@@ -56,11 +64,21 @@ public:
      * - ADD the device address
      * - CTR the control command
      * - DAT the data to be transmitted
-     * @returns nothing
+     * @returns the encoded data in a QByteArray
      *
      */
-    QByteArray encodeHDLC(Byte ADD, Byte CTR, QByteArray DAT);
-    decodedHDLC decodeHDLC(QByteArray encodedHDLC);
+    static QByteArray encodeHDLC(Byte ADD, Byte CTR, QByteArray DAT);
+
+    /*
+     *
+     * QByteArray decodeHDLC()
+     * @description decodes data trough HDLC
+     * @params none
+     * @returns the decoded data in a decodedHDLC struct
+     *
+     */
+    static decodedHDLC decodeHDLC(QByteArray encodedHDLC);
+
 };
 
 #endif // HDLC_H
