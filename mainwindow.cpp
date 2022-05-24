@@ -1,7 +1,10 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QDebug>
+
 #include "serialtransreceiver.h"
+#include "hdlc.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -49,5 +52,7 @@ void MainWindow::on_pushButton_4_clicked()
 void MainWindow::on_pushButton_5_clicked()
 {
     serial->closeSerialPort();
+    char* frame = "ITS";
+    qDebug() << HDLC().crc16(frame, 24);
 }
 
