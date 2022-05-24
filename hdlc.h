@@ -46,6 +46,7 @@ public:
         Byte CTR;
         QByteArray DAT;
         QByteArray FCS;
+        bool dataValid;
     } decodedHDLC;
     /*
      *

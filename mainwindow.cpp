@@ -53,7 +53,7 @@ void MainWindow::on_pushButton_5_clicked()
 {
     serial->closeSerialPort();
 
-    QString input = "TE}ST ABCDEF - 123456 &%$ *";
+    QString input = "TE}S Tdaaaa";
     int add = 135;
     int ctr = add;
     QByteArray eHDLC = HDLC().encodeHDLC(add, ctr, input.toStdString().c_str());
@@ -61,7 +61,7 @@ void MainWindow::on_pushButton_5_clicked()
 
     qDebug() << "INPUT TO HDLC (ADD, CTR, DAT)" << (char)add << (char)ctr << input;
     qDebug()  << "ENCODED HDLC" << eHDLC.toStdString().c_str();
-    qDebug() << "DECODED HDLC (ADD, CTR, DAT, FCS)" << (char)dHDLC.ADD << (char)dHDLC.CTR << dHDLC.DAT << dHDLC.FCS;
+    qDebug() << "DECODED HDLC (ADD, CTR, DAT, FCS, VALID?)" << (char)dHDLC.ADD << (char)dHDLC.CTR << dHDLC.DAT << dHDLC.FCS << dHDLC.dataValid;
 
 }
 

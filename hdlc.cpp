@@ -81,7 +81,7 @@ QByteArray HDLC::encodeHDLC(Byte ADD, Byte CTR, QByteArray DAT)
     // CRC16
     QString str = toChecksum.data();
     qint16 crc = qChecksum(str.toStdString().c_str(), 16);
-    //qDebug() << str.toStdString().c_str();
+    //qDebug() << "TOC1" << str.toStdString().c_str() << crc;
     // Split 16 bit number into 2 bytes
     Byte crc0 = crc & 0xFF;
     Byte crc1 = crc >> 8;
@@ -117,7 +117,8 @@ HDLC::decodedHDLC HDLC::decodeHDLC(QByteArray encodedHDLC)
     // Index = DAT_LEN - FLG - BEG_LEN - FCS - FLG
     //qDebug() << encodedHDLC.length();
     int DAT_LEN = encodedHDLC.length() - 2 - 2 - 2 - 2;
-    int escOfst = 0;
+    int escOfst = 0;;
+    QByteArray toChecksum = 0;
 
     // Address
     decoded.ADD = encodedHDLC[1];
@@ -140,8 +141,27 @@ HDLC::decodedHDLC HDLC::decodeHDLC(QByteArray encodedHDLC)
 
     // Checksum
     decoded.FCS = 0;
-    decoded.FCS[0] = encodedHDLC[FCS_LEN+BEG_LEN+DAT_LEN+1-escOfst];
-    decoded.FCS[1] = encodedHDLC[FCS_LEN+BEG_LEN+DAT_LEN+2-escOfst];
+    decoded.FCS[0] = encodedHDLC[FCS_LEN+BEG_LEN+DAT_LEN-escOfst];
+    decoded.FCS[1] = encodedHDLC[FCS_LEN+BEG_LEN+DAT_LEN+1-escOfst];
+
+    // Verify checksum
+    toChecksum.append(decoded.ADD);
+    toChecksum.append(ESC);
+    toChecksum.append(decoded.CTR);
+    toChecksum.append(decoded.DAT);
+
+    QString str = toChecksum.data();
+    qint16 crc = qChecksum(str.toStdString().c_str(), 16);
+    //qDebug() << "TOC2" << str.toStdString().c_str() << crc;
+    // Split 16 bit number into 2 bytes
+    Byte crc0 = crc & 0xFF;
+    Byte crc1 = crc >> 8;
+    //qDebug() << (char) decoded.FCS[0]  << (char) crc0 <<  (char) decoded.FCS[1]<<(char) crc1;
+    if (((char)crc0 == (char)decoded.FCS[0]) && ((char)crc1 == (char)decoded.FCS[1])) {
+        decoded.dataValid = true;
+    } else {
+        decoded.dataValid = false;
+    }
 
     return decoded;
 }
