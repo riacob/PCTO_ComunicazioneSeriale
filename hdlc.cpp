@@ -14,7 +14,7 @@
 #define ESC 0x7D // Esc char
 #define TST 0x99
 #define FCS_LEN 2 // FCS length, 2 Bytes
-#define BEG_LEN 2 // ADD + ESC + CTR length, 3 Bytes
+#define BEG_LEN 3 // ADD + ESC + CTR length, 3 Bytes
 #define FLG_LEN 1 // FLG length, 1 byte
 
 /*
@@ -25,6 +25,7 @@
     CRC P.28
 
  DATI = 8bFLG / 8bADD 8bESC 8bCTR xbDAT 16bFCS / 8bFLG
+ ~ \x00}]\x00 HelloWorld \xEC \x00 ~
  PACCHETTO = 8bADD 8bESC 8bCTR xbDAT 16bFCS
 
  FLG = 0x7E
@@ -63,10 +64,9 @@ QByteArray HDLC::encodeHDLC(Byte ADD, Byte CTR, QByteArray DAT)
     toChecksum.append(ADD);
 
     // Escape
-    /*
     out[2] = ESC; // 1 Byte
     // Is part of the to-checksum packet
-    toChecksum.append(ESC);*/
+    toChecksum.append(ESC);
 
     // Control
     out[3] = CTR; // 1 Byte
@@ -79,7 +79,15 @@ QByteArray HDLC::encodeHDLC(Byte ADD, Byte CTR, QByteArray DAT)
     toChecksum.append(DAT);
 
     // CRC16
-    out.append(qChecksum(toChecksum, 16)); // 2 Bytes
+    QString str = toChecksum.data();
+    qint16 crc = qChecksum(str.toStdString().c_str(), 16);
+    //qDebug() << str.toStdString().c_str();
+    // Split 16 bit number into 2 bytes
+    Byte crc0 = crc & 0xFF;
+    Byte crc1 = crc >> 8;
+    // Append the 2 bytes to the array
+    out.append(crc0);
+    out.append(crc1);
 
     // Byte stuffing
     // Loop trough the array excluding the start end end flags
@@ -98,7 +106,7 @@ QByteArray HDLC::encodeHDLC(Byte ADD, Byte CTR, QByteArray DAT)
 
     // End flag
     // Index: FLG_LEN (1 Bytes) + BEG_LEN (3 Bytes) + DAT_LEN (x Bytes) + FCS_LEN (2 Bytes) + 1
-    out[BEG_LEN+DAT_LEN+FCS_LEN+FLG_LEN+FLG_LEN] = FLG;
+    out[BEG_LEN+DAT_LEN+FCS_LEN+FLG_LEN+FLG_LEN+1] = FLG;
 
     return out;
 }
@@ -107,25 +115,25 @@ HDLC::decodedHDLC HDLC::decodeHDLC(QByteArray encodedHDLC)
 {
     HDLC::decodedHDLC decoded;
     // Index = DAT_LEN - FLG - BEG_LEN - FCS - FLG
-    int DAT_LEN = encodedHDLC.length() - BEG_LEN - FCS_LEN - FLG_LEN - FLG_LEN;
+    //qDebug() << encodedHDLC.length();
+    int DAT_LEN = encodedHDLC.length() - 2 - 2 - 2 - 2;
 
-    // Extract the beginning from the framed packet
-    decoded.FLG_1 = encodedHDLC[0];
+    // Address
     decoded.ADD = encodedHDLC[1];
-    decoded.ESC_C = encodedHDLC[2];
-    decoded.CTR = encodedHDLC[3];
 
-    // Extract the information from the framed packet
-    for (int i = 4; i < DAT_LEN; i++) {
-         decoded.DAT.append(encodedHDLC[i]);
+    // Control
+    decoded.CTR = encodedHDLC[4];
+
+    // Data
+    decoded.DAT = 0;
+    for (int i = 5; i < DAT_LEN+5; i++) {
+        decoded.DAT.append(encodedHDLC[i]);
     }
 
-    // Extract the FCS from the framed packet
-    decoded.FCS[0] = encodedHDLC[FLG_LEN+BEG_LEN+DAT_LEN+1];
-    decoded.FCS[1] = encodedHDLC[FLG_LEN+BEG_LEN+DAT_LEN+2];
-
-    // Extract the ending from the framed packet
-    decoded.FLG_2 =  encodedHDLC[FLG_LEN+BEG_LEN+DAT_LEN+FCS_LEN+1];
+    // Checksum
+    decoded.FCS = 0;
+    decoded.FCS[0] = encodedHDLC[FCS_LEN+BEG_LEN+DAT_LEN+1];
+    decoded.FCS[1] = encodedHDLC[FCS_LEN+BEG_LEN+DAT_LEN+2];
 
     return decoded;
 }

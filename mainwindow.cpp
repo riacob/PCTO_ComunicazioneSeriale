@@ -53,11 +53,15 @@ void MainWindow::on_pushButton_5_clicked()
 {
     serial->closeSerialPort();
 
-    QByteArray eHDLC = HDLC().encodeHDLC(0x00, 0x00, "Hello World");
-    qDebug() << eHDLC;
-
+    QString input = "TE}ST";
+    int add = 135;
+    int ctr = add;
+    QByteArray eHDLC = HDLC().encodeHDLC(add, ctr, input.toStdString().c_str());
     HDLC::decodedHDLC dHDLC = HDLC().decodeHDLC(eHDLC);
-    qDebug() << dHDLC.FLG_1 << dHDLC.ADD << dHDLC.ESC_C << dHDLC.CTR << dHDLC.DAT << dHDLC.FLG_2;
+
+    qDebug() << "INPUT TO HDLC (ADD, CTR, DAT)" << (char)add << (char)ctr << input;
+    qDebug()  << "ENCODED HDLC" << eHDLC.toStdString().c_str();
+    qDebug() << "DECODED HDLC (ADD, CTR, DAT, FCS)" << (char)dHDLC.ADD << (char)dHDLC.CTR << dHDLC.DAT << dHDLC.FCS;
 
 }
 

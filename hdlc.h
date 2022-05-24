@@ -42,13 +42,10 @@ class HDLC
 {
 public:
     typedef struct decodedHDLC {
-        Byte FLG_1;
         Byte ADD;
-        Byte ESC_C;
         Byte CTR;
         QByteArray DAT;
         QByteArray FCS;
-        Byte FLG_2;
     } decodedHDLC;
     /*
      *
@@ -61,8 +58,8 @@ public:
      * @returns nothing
      *
      */
-    static QByteArray encodeHDLC(Byte ADD, Byte CTR, QByteArray DAT);
-    static decodedHDLC decodeHDLC(QByteArray encodedHDLC);
+    QByteArray encodeHDLC(Byte ADD, Byte CTR, QByteArray DAT);
+    decodedHDLC decodeHDLC(QByteArray encodedHDLC);
 };
 
 #endif // HDLC_H
