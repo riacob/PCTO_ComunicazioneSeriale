@@ -2,6 +2,7 @@
 #define HDLC_H
 
 class HDLC {
+
 };
 
 #endif
