@@ -53,7 +53,7 @@ void MainWindow::on_pushButton_5_clicked()
 {
     serial->closeSerialPort();
 
-    QString input = "{HelXo World!}";
+    QString input = "{HelXo World! ABCDEF}";
     // char (int 135) = '?'
     int add = 135;
     int ctr = 76;
@@ -63,7 +63,6 @@ void MainWindow::on_pushButton_5_clicked()
     qDebug() << "INPUT TO HDLC (ADD, CTR, DAT)" << (char)add << (char)ctr << input;
     qDebug()  << "ENCODED HDLC" << eHDLC.toStdString().c_str();
     qDebug() << "DECODED HDLC (ADD, CTR, DAT, FCS, VALID?)" << (char)dHDLC.ADD << (char)dHDLC.CTR << dHDLC.DAT << dHDLC.FCS.toStdString().c_str() << dHDLC.dataValid;
-
 
 }
 

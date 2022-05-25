@@ -15,6 +15,7 @@
 #define FCS_LEN 2 // FCS length, 2 Bytes
 #define BEG_LEN 3 // ADD + ESC + CTR length, 3 Bytes
 #define FLG_LEN 1 // FLG length, 1 byte
+#define CRC_BITS 16
 
 /*
 
@@ -79,7 +80,7 @@ QByteArray HDLC::encodeHDLC(Byte ADD, Byte CTR, QByteArray DAT)
 
     // CRC16
     QString str = toChecksum.data();
-    qint16 crc = qChecksum(str.toStdString().c_str(), 16);
+    qint16 crc = qChecksum(str.toStdString().c_str(), CRC_BITS);
     // Split 16 bit number into 2 bytes
     Byte crc0 = crc & 0xFF;
     Byte crc1 = crc >> 8;
@@ -112,19 +113,12 @@ HDLC::decodedHDLC HDLC::decodeHDLC(QByteArray encodedHDLC)
 {
     HDLC::decodedHDLC decoded;
     // Index = DAT_LEN - FLG - BEG_LEN - FCS - FLG
-    int DAT_LEN = encodedHDLC.length() - 2 - 2 - 2 - 2;
+    //int DAT_LEN = encodedHDLC.length() - 2 - 2 - 2 - 2;
     int escOfst = 0;;
     QByteArray toChecksum = 0;
 
-    // Address
-    decoded.ADD = encodedHDLC[1];
-
-    // Control
-    decoded.CTR = encodedHDLC[4];
-
-    // Data with reverse XOR 0x20 - result = charToXOR^0x20
-    decoded.DAT = 0;
-    for (int i = 5; i < DAT_LEN+5-escOfst; i++) {
+    // Byte de-stuffing
+    for (int i = 1; i < encodedHDLC.length()-escOfst-3; i++) {
         // If we find an escape char we xor the next char and remove the escape char
         // We must also offset the checksum position index
         if (encodedHDLC[i].operator==(ESC)) {
@@ -132,13 +126,23 @@ HDLC::decodedHDLC HDLC::decodeHDLC(QByteArray encodedHDLC)
             encodedHDLC.remove(i, 1);
             escOfst++;
         }
-        decoded.DAT.append(encodedHDLC[i]);
+    }
+
+    // Address
+    decoded.ADD = encodedHDLC[1];
+
+    // Control
+    decoded.CTR = encodedHDLC[3];
+
+    // Data
+    for (int j = 4; j < encodedHDLC.length()-3; j++) {
+        decoded.DAT.append(encodedHDLC[j]);
     }
 
     // Checksum
     decoded.FCS = 0;
-    decoded.FCS[0] = encodedHDLC[FCS_LEN+BEG_LEN+DAT_LEN-escOfst];
-    decoded.FCS[1] = encodedHDLC[FCS_LEN+BEG_LEN+DAT_LEN+1-escOfst];
+    decoded.FCS[0] = encodedHDLC[encodedHDLC.length()-3];
+    decoded.FCS[1] = encodedHDLC[encodedHDLC.length()-2];
 
     // Construct the array toChecksum
     toChecksum.append(decoded.ADD);
@@ -147,7 +151,7 @@ HDLC::decodedHDLC HDLC::decodeHDLC(QByteArray encodedHDLC)
     toChecksum.append(decoded.DAT);
     // Verify checksum
     QString str = toChecksum.data();
-    qint16 crc = qChecksum(str.toStdString().c_str(), 16);
+    qint16 crc = qChecksum(str.toStdString().c_str(), CRC_BITS);
     // Split 16 bit number into 2 bytes
     Byte crc0 = crc & 0xFF;
     Byte crc1 = crc >> 8;
