@@ -185,6 +185,7 @@ void SerialTransreceiver::writeDataEncodeHDLC(Byte ADD, Byte CTR, QByteArray dat
 {
     // Encode and write the data to the serial port
     QByteArray finalData = HDLC::encodeHDLC(ADD, CTR, data);
+    qDebug() << finalData;
     writeData(finalData);
 }
 
