@@ -29,4 +29,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 DISTFILES += \
+    PCTO_SerialTransreceiver_1.rar \
     test_1.ino
