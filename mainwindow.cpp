@@ -53,7 +53,7 @@ void MainWindow::on_pushButton_5_clicked()
 {
     serial->closeSerialPort();
 
-    QString input = "{HelXo World! ABCDEF}";
+    QString input = "hello";
     // char (int 135) = '?'
     int add = 135;
     int ctr = 76;
@@ -69,6 +69,6 @@ void MainWindow::on_pushButton_5_clicked()
 // Write w/ HDLC
 void MainWindow::on_pushButton_6_clicked()
 {
-    serial->writeDataEncodeHDLC(5, 5, ui->plainTextEdit->toPlainText().toStdString().c_str());
+    serial->writeDataEncodeHDLC('a', 'a', ui->plainTextEdit->toPlainText().toStdString().c_str());
 }
 

@@ -15,7 +15,7 @@
 #define FCS_LEN 2 // FCS length, 2 Bytes
 #define BEG_LEN 3 // ADD + ESC + CTR length, 3 Bytes
 #define FLG_LEN 1 // FLG length, 1 byte
-#define CRC_BITS 16
+#define CRC_BITS 2
 
 /*
 
@@ -80,7 +80,8 @@ QByteArray HDLC::encodeHDLC(Byte ADD, Byte CTR, QByteArray DAT)
 
     // CRC16
     QString str = toChecksum.data();
-    qint16 crc = qChecksum(str.toStdString().c_str(), CRC_BITS);
+    //qint16 crc = qChecksum(str.toStdString().c_str(), CRC_BITS);
+    qint16 crc = crc16modbus(str.toStdString().c_str(), CRC_BITS);
     // Split 16 bit number into 2 bytes
     Byte crc0 = crc & 0xFF;
     Byte crc1 = crc >> 8;
@@ -151,7 +152,8 @@ HDLC::decodedHDLC HDLC::decodeHDLC(QByteArray encodedHDLC)
     toChecksum.append(decoded.DAT);
     // Verify checksum
     QString str = toChecksum.data();
-    qint16 crc = qChecksum(str.toStdString().c_str(), CRC_BITS);
+    //qint16 crc = qChecksum(str.toStdString().c_str(), CRC_BITS);
+    qint16 crc = crc16modbus(str.toStdString().c_str(), CRC_BITS);
     // Split 16 bit number into 2 bytes
     Byte crc0 = crc & 0xFF;
     Byte crc1 = crc >> 8;
@@ -163,5 +165,36 @@ HDLC::decodedHDLC HDLC::decodeHDLC(QByteArray encodedHDLC)
     }
 
     return decoded;
+}
+
+qint16 HDLC::crc16modbus(const char *dat, unsigned int len)
+{
+    for (unsigned int i = 0; i < len; i++) {
+        qDebug() << (char)dat[i];
+    }
+
+    qint16 crc = 0xFFFF;
+    unsigned int i = 0;
+    char bit = 0;
+
+    for( i = 0; i < len; i++ )
+    {
+        crc ^= dat[i];
+
+        for( bit = 0; bit < 8; bit++ )
+        {
+            if( crc & 0x0001 )
+            {
+                crc >>= 1;
+                crc ^= 0xA001;
+            }
+            else
+            {
+                crc >>= 1;
+            }
+        }
+    }
+    qDebug() << "CRC" << crc;
+    return crc;
 }
 
