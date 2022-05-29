@@ -201,3 +201,30 @@ uint16_t HDLC::crc16modbus(const char *dat, unsigned int len)
     return crc;
 }
 
+QByteArray HDLC::cleanData(QByteArray data)
+{
+    int packetLen = 0;
+    int startIdx = 0;
+
+    // If the data starts with FLG we already found the start
+    // Which means we just need to find the second FLG
+    // And it also means that we don't have to remove anything before it
+    if (data.startsWith(FLG)) {
+        packetLen = 1;
+    }
+
+    while (data[packetLen].operator!=(FLG)) {
+        packetLen++;
+        startIdx++;
+    }
+    packetLen++;
+
+    // second parameter of mid function is length not index so we need to sum 1
+    QByteArray cData = data.mid(startIdx, startIdx+packetLen+1);
+    //cData = data.remove(packetLen+1, data.length()-packetLen);
+
+    qDebug() << startIdx << cData;
+
+    return cData;
+}
+

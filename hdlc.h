@@ -80,6 +80,8 @@ public:
     static decodedHDLC decodeHDLC(QByteArray encodedHDLC);
 
     static uint16_t crc16modbus(const char* dat, unsigned int len);
+    // Remove anything after the last FLG
+    static QByteArray cleanData(QByteArray data);
 
 };
 

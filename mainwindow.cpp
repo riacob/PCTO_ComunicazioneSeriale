@@ -39,6 +39,7 @@ void MainWindow::on_pushButton_3_clicked()
 {
     QByteArray data = serial->readData();
     ui->plainTextEdit_3->clear();
+    //ui->plainTextEdit_3->appendPlainText(tr(HDLC().cleanData(data)));
     ui->plainTextEdit_3->appendPlainText(tr(data));
 }
 
@@ -61,6 +62,7 @@ void MainWindow::on_pushButton_5_clicked()
     HDLC::decodedHDLC dHDLC = HDLC().decodeHDLC(eHDLC);
     qDebug() << HDLC().crc16modbus("a}ahelo", 7);
     qDebug() << HDLC().crc16modbus("a}ahelo�g", 7);
+    qDebug() << HDLC().cleanData("junk~SOMEDATA~~lijiijk~junk");
 
     /*
     qDebug() << "INPUT TO HDLC (ADD, CTR, DAT)" << (char)add << (char)ctr << input;

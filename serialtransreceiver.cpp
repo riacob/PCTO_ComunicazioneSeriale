@@ -191,9 +191,10 @@ void SerialTransreceiver::writeDataEncodeHDLC(Byte ADD, Byte CTR, QByteArray dat
 
 HDLC::decodedHDLC SerialTransreceiver::readDataDecodeHDLC()
 {
-    // Read and decode the data from the serial port
+    // Read the data from the serial port
     HDLC::decodedHDLC decodedHDLC;
     QByteArray rData = readData();
-    decodedHDLC = HDLC::decodeHDLC(rData);
+    // Clean data and send to decoder (remove junk after last flag)
+    decodedHDLC = HDLC::decodeHDLC(HDLC().cleanData(rData));
     return decodedHDLC;
 }
