@@ -59,11 +59,19 @@ void MainWindow::on_pushButton_5_clicked()
     int ctr = 76;
     QByteArray eHDLC = HDLC().encodeHDLC(add, ctr, input.toStdString().c_str());
     HDLC::decodedHDLC dHDLC = HDLC().decodeHDLC(eHDLC);
+    qDebug() << HDLC().crc16modbus("a}ahelo", 7);
+    qDebug() << HDLC().crc16modbus("a}ahelo�g", 7);
 
+    /*
     qDebug() << "INPUT TO HDLC (ADD, CTR, DAT)" << (char)add << (char)ctr << input;
     qDebug()  << "ENCODED HDLC" << eHDLC.toStdString().c_str();
-    qDebug() << "DECODED HDLC (ADD, CTR, DAT, FCS, VALID?)" << (char)dHDLC.ADD << (char)dHDLC.CTR << dHDLC.DAT << dHDLC.FCS.toStdString().c_str() << dHDLC.dataValid;
-
+    qDebug() << "DECODED HDLC (ADD, CTR, DAT, VALID?)" << (char)dHDLC.ADD << (char)dHDLC.CTR << dHDLC.DAT << dHDLC.dataValid;
+    qDebug() << "---------------------------------";
+    qDebug() << "hello1" << HDLC().crc16modbus("?}]Lhello", 9);
+    qDebug() << "hello2" << HDLC().crc16modbus("?}]Lhello(,", 9);
+    //qDebug() << "hello3" << qChecksum("HELLO THIS IS JUST A TEST", 16);
+    qDebug() << "---------------------------------";
+    */
 }
 
 // Write w/ HDLC

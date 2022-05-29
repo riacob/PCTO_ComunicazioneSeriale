@@ -79,7 +79,7 @@ public:
      */
     static decodedHDLC decodeHDLC(QByteArray encodedHDLC);
 
-    static qint16 crc16modbus(const char* dat, unsigned int len);
+    static uint16_t crc16modbus(const char* dat, unsigned int len);
 
 };
 
