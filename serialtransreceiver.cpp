@@ -54,7 +54,7 @@ void SerialTransreceiver::openSerialPort()
         return;
     }
     serialPort->open(serialPortSettings->openMode);
-    qDebug() << serialPort->portName() << serialPort->baudRate();
+    //qDebug() << serialPort->portName() << serialPort->baudRate();
 }
 
 void SerialTransreceiver::closeSerialPort()
@@ -97,7 +97,7 @@ QByteArray SerialTransreceiver::readData()
     // Read the incoming data from the serial port and return
     QByteArray data;
     data = serialPort->readAll();
-    qDebug() << data;
+    //qDebug() << data;
     return data;
 }
 
@@ -185,7 +185,7 @@ void SerialTransreceiver::writeDataEncodeHDLC(Byte ADD, Byte CTR, QByteArray dat
 {
     // Encode and write the data to the serial port
     QByteArray finalData = HDLC::encodeHDLC(ADD, CTR, data);
-    qDebug() << "writeDataEncodeHDLC -" << finalData;
+    //qDebug() << "writeDataEncodeHDLC -" << finalData;
     writeData(finalData);
 }
 

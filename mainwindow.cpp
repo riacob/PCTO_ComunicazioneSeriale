@@ -60,9 +60,9 @@ void MainWindow::on_pushButton_5_clicked()
     int ctr = 76;
     QByteArray eHDLC = HDLC().encodeHDLC(add, ctr, input.toStdString().c_str());
     HDLC::decodedHDLC dHDLC = HDLC().decodeHDLC(eHDLC);
-    qDebug() << HDLC().crc16modbus("a}ahelo", 7);
-    qDebug() << HDLC().crc16modbus("a}ahelo�g", 7);
-    qDebug() << HDLC().cleanData("junk~SOMEDATA~~lijiijk~junk");
+    //qDebug() << HDLC().crc16modbus("a}ahelo", 7);
+    //qDebug() << HDLC().crc16modbus("a}ahelo�g", 7);
+    //qDebug() << HDLC().cleanData("junk~SOMEDATA~~lijiijk~junk");
 
     /*
     qDebug() << "INPUT TO HDLC (ADD, CTR, DAT)" << (char)add << (char)ctr << input;

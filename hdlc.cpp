@@ -197,7 +197,7 @@ uint16_t HDLC::crc16modbus(const char *dat, unsigned int len)
             }
         }
     }
-    qDebug() << "crc16modbus - DATA:" << dat << "- LENGHT:" << len << "- CRC:" << crc << "- CRC[0]:" << (int)(crc & 0xFF) << "- CRC[1]:" << (int)(crc >> 8);
+    //qDebug() << "crc16modbus - DATA:" << dat << "- LENGHT:" << len << "- CRC:" << crc << "- CRC[0]:" << (int)(crc & 0xFF) << "- CRC[1]:" << (int)(crc >> 8);
     return crc;
 }
 
