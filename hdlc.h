@@ -10,33 +10,9 @@
 #define HDLC_H
 
 #include <QObject>
-#include <QByteRef>
 
+// Definition of "Byte", which is just an unsigned char
 typedef unsigned char Byte;
-
-// HDLC with x16+x15+x2+1 poly
-// CRC16-USB or CRC16-MODBUS
-
-/*
-HDLC pag 121
-Byte stuffing pag 101
-
-DATI = 8bFLG / 8bADD 8bCTR xbDAT 16bFCS / 8bFLG
-PACCHETTO = 8bADD 8bCTR xbDAT 16bFCS
-
-FLG = 0x7E
-ESC = 0x7D
-
-1. Inserire FLG
-2. Preparare il pacchetto
-    a. calcolare il CRC16 (FCS)
-    b. inserire ADDR, ESC, CTR, DAT, FCS
-4. Controllare l'eventuale presenza nel pacchetto di caratteri FLG, ESC
-5. In caso affermativo
-    a. Inserire il carattere di escape prima del carattere individuato
-    b. Calcolare lo XOR tra il carattere individuato e 0x20 (complemento a 5)
-6. Ritornare il pacchetto nel frame
-*/
 
 class HDLC
 {
@@ -71,7 +47,7 @@ public:
 
     /*
      *
-     * QByteArray decodeHDLC()
+     * decodedHDLC decodeHDLC()
      * @description decodes data trough HDLC
      * @params none
      * @returns the decoded data in a decodedHDLC struct
@@ -79,8 +55,25 @@ public:
      */
     static decodedHDLC decodeHDLC(QByteArray encodedHDLC);
 
+    /*
+     * uint16_t crc16modbus(const char* dat, unsigned int len)
+     * @description calculates the CRC16-MODBUS of the given dat array with the specified len
+     * @params
+     * - dat: the array of which to calculate the CRC16
+     * - len: the length of the array
+     *
+     */
     static uint16_t crc16modbus(const char* dat, unsigned int len);
-    // Remove anything after the last FLG
+
+    /*
+     *
+     *  QByteArray cleanData(QByteArray data)
+     *  @description removes everything from data except whatever is in between of two FLG chars
+     *  @params
+     *  - data: the data to clean
+     *  @returns nothing
+     *
+     */
     static QByteArray cleanData(QByteArray data);
 
 };

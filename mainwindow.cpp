@@ -64,7 +64,7 @@ void MainWindow::on_pushButton_5_clicked()
     //qDebug() << HDLC().crc16modbus("a}ahelo�g", 7);
     //qDebug() << HDLC().cleanData("junk~SOMEDATA~~lijiijk~junk");
 
-    /*
+
     qDebug() << "INPUT TO HDLC (ADD, CTR, DAT)" << (char)add << (char)ctr << input;
     qDebug()  << "ENCODED HDLC" << eHDLC.toStdString().c_str();
     qDebug() << "DECODED HDLC (ADD, CTR, DAT, VALID?)" << (char)dHDLC.ADD << (char)dHDLC.CTR << dHDLC.DAT << dHDLC.dataValid;
@@ -73,7 +73,7 @@ void MainWindow::on_pushButton_5_clicked()
     qDebug() << "hello2" << HDLC().crc16modbus("?}]Lhello(,", 9);
     //qDebug() << "hello3" << qChecksum("HELLO THIS IS JUST A TEST", 16);
     qDebug() << "---------------------------------";
-    */
+
 }
 
 // Write w/ HDLC

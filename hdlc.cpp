@@ -14,61 +14,28 @@
 #define ESC 0x7D // Esc char
 #define FCS_LEN 2 // FCS length, 2 Bytes
 #define BEG_LEN 3 // ADD + ESC + CTR length, 3 Bytes
-#define FLG_LEN 1 // FLG length, 1 byte
-
-/*
-
-  Risorse utili:
-    HDLC P.121
-    Byte Stuffing P.111
-    CRC P.28
-
- DATI = 8bFLG / 8bADD 8bESC 8bCTR xbDAT 16bFCS / 8bFLG
- ~ \x00}]\x00 HelloWorld \xEC \x00 ~
- PACCHETTO = 8bADD 8bESC 8bCTR xbDAT 16bFCS
-
- FLG = 0x7E
- ESC = 0x7D
-
- 1. Inserire FLG all'inizio
-
- 2. Preparare il pacchetto
-    a. calcolare FCS, ottenuto da ADD + ESC + CTR + DAT processati dall'algoritmo del CRC16
-    b. inserire nel frame ADDR + ESC + CTR + DAT + FCS
-
- 3. Controllare l'eventuale presenza nel pacchetto di caratteri FLG, ESC
-
- 4. In caso affermativo
-    a. Inserire il carattere di escape prima del carattere individuato
-    b. Calcolare lo XOR tra il carattere individuato e 0x20 (complemento a 5)
-
- 5. Inserire FLG alla fine
-
- 6. Consegnare il risultato
-
-*/
 
 QByteArray HDLC::encodeHDLC(Byte ADD, Byte CTR, QByteArray DAT)
 {
     int DAT_LEN = DAT.length(); // Data length
-    QByteArray out = 0; // Resulting framed packet
+    QByteArray out; // Resulting framed packet
     QByteArray toChecksum = 0; // ADD + ESC + CTR + DAT
 
     // Start flag
-    out[0] = FLG; // 1 Byte
+    out.append(FLG); // 1 Byte
 
     // Address
-    out[1] = ADD; // 1 Byte
+    out.append(ADD); // 1 Byte
     // Is part of the to-checksum packet
     toChecksum.append(ADD);
 
     // Escape
-    out[2] = ESC; // 1 Byte
+    out.append(ESC); // 1 Byte
     // Is part of the to-checksum packet
     toChecksum.append(ESC);
 
     // Control
-    out[3] = CTR; // 1 Byte
+    out.append(CTR); // 1 Byte
     // Is part of the to-checksum packet
     toChecksum.append(CTR);
 
@@ -79,12 +46,10 @@ QByteArray HDLC::encodeHDLC(Byte ADD, Byte CTR, QByteArray DAT)
 
     // CRC16
     QString str = toChecksum.data();
-    //qint16 crc = qChecksum(str.toStdString().c_str(), CRC_BITS);
     uint16_t crc = crc16modbus(str.toStdString().c_str(), str.length());
     // Split 16 bit number into 2 bytes
     Byte crc0 = crc & 0xFF;
     Byte crc1 = crc >> 8;
-    //qDebug() << "CRCVAL " << crc;
     // Append the 2 bytes to the array
     out.append(crc0);
     out.append(crc1);
@@ -98,7 +63,7 @@ QByteArray HDLC::encodeHDLC(Byte ADD, Byte CTR, QByteArray DAT)
     // Continue
     // 8bADD 8bESC 8bCTR xbDAT 16bFCS
     for (int i = 1; i < BEG_LEN+DAT_LEN+FCS_LEN; i++) {
-        if ((out[i].operator==(FLG)) || (out[i].operator==(ESC))) {
+        if ((out[i] == FLG) || (out[i] == ESC)) {
             out[i] = out[i] ^ 0x20;
             out.insert(i, ESC);
         }
@@ -113,16 +78,14 @@ QByteArray HDLC::encodeHDLC(Byte ADD, Byte CTR, QByteArray DAT)
 HDLC::decodedHDLC HDLC::decodeHDLC(QByteArray encodedHDLC)
 {
     HDLC::decodedHDLC decoded;
-    // Index = DAT_LEN - FLG - BEG_LEN - FCS - FLG
-    //int DAT_LEN = encodedHDLC.length() - 2 - 2 - 2 - 2;
-    int escOfst = 0;;
-    QByteArray toChecksum = 0;
+    int escOfst = 0;
+    QByteArray toChecksum;
 
     // Byte de-stuffing
     for (int i = 1; i < encodedHDLC.length()-escOfst-3; i++) {
         // If we find an escape char we xor the next char and remove the escape char
         // We must also offset the checksum position index
-        if (encodedHDLC[i].operator==(ESC)) {
+        if (encodedHDLC[i] == ESC) {
             encodedHDLC[i+1] = encodedHDLC[i+1] ^ 0x20;
             encodedHDLC.remove(i, 1);
             escOfst++;
@@ -142,8 +105,8 @@ HDLC::decodedHDLC HDLC::decodeHDLC(QByteArray encodedHDLC)
 
     // Checksum
     decoded.FCS = 0;
-    decoded.FCS[0] = encodedHDLC[encodedHDLC.length()-3];
-    decoded.FCS[1] = encodedHDLC[encodedHDLC.length()-2];
+    decoded.FCS.append(encodedHDLC[encodedHDLC.length()-3]);
+    decoded.FCS.append(encodedHDLC[encodedHDLC.length()-2]);
 
     // Construct the array toChecksum
     toChecksum.append(decoded.ADD);
@@ -152,18 +115,14 @@ HDLC::decodedHDLC HDLC::decodeHDLC(QByteArray encodedHDLC)
     toChecksum.append(decoded.DAT);
     toChecksum.append(decoded.FCS[0]);
     toChecksum.append(decoded.FCS[1]);
+
     // Verify checksum
     QString str = toChecksum.data();
-    //qint16 crc = qChecksum(str.toStdString().c_str(), CRC_BITS);
-    //qDebug() << str.toStdString().c_str();
     qint16 crc = crc16modbus(str.toStdString().c_str(), str.length()-2);
     // Split 16 bit number into 2 bytes
     Byte crc0 = crc & 0xFF;
     Byte crc1 = crc >> 8;
-    //qDebug() << "CRCVAL " << crc;
     // Compare the received CRC16 to the calculated one, hence determine the data validity
-    //qDebug() << (char)crc0 << (char)decoded.FCS[0];
-    //qDebug() << (char)crc1 << (char)decoded.FCS[1];
     if (((char)crc0 == (char)decoded.FCS[0]) && ((char)crc1 == (char)decoded.FCS[1])) {
         decoded.dataValid = true;
     } else {
@@ -181,9 +140,7 @@ uint16_t HDLC::crc16modbus(const char *dat, unsigned int len)
     char bit = 0;
     for( i = 0; i < len; i++ )
     {
-        //qDebug() << (char)dat[i];
         crc ^= dat[i];
-
         for( bit = 0; bit < 8; bit++ )
         {
             if( crc & 0x0001 )
@@ -197,7 +154,6 @@ uint16_t HDLC::crc16modbus(const char *dat, unsigned int len)
             }
         }
     }
-    //qDebug() << "crc16modbus - DATA:" << dat << "- LENGHT:" << len << "- CRC:" << crc << "- CRC[0]:" << (int)(crc & 0xFF) << "- CRC[1]:" << (int)(crc >> 8);
     return crc;
 }
 
@@ -213,7 +169,7 @@ QByteArray HDLC::cleanData(QByteArray data)
         packetLen = 1;
     }
 
-    while (data[packetLen].operator!=(FLG)) {
+    while (data[packetLen] != FLG) {
         packetLen++;
         startIdx++;
     }
@@ -221,9 +177,6 @@ QByteArray HDLC::cleanData(QByteArray data)
 
     // second parameter of mid function is length not index so we need to sum 1
     QByteArray cData = data.mid(startIdx, startIdx+packetLen+1);
-    //cData = data.remove(packetLen+1, data.length()-packetLen);
-
-    qDebug() << startIdx << cData;
 
     return cData;
 }

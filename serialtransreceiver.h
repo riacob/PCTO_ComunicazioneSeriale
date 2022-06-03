@@ -16,7 +16,7 @@
 
 class SerialTransreceiver
 {
-private:
+public:
 
     // Serial port settings struct, holds the settings for the serial port
     typedef struct SerialPortSettings{
@@ -37,6 +37,8 @@ private:
         // Open mode
         QSerialPort::OpenMode openMode = QSerialPort::ReadWrite;
     } SerialPortSettings;
+
+private:
 
     // Serial port settings pointer
     SerialPortSettings* serialPortSettings;
